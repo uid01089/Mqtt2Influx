@@ -4,7 +4,7 @@ import re
 
 
 import paho.mqtt.client as pahoMqtt
-from PythonLib.Mqtt import Mqtt
+from PythonLib.Mqtt import MQTTHandler, Mqtt
 from PythonLib.Scheduler import Scheduler
 from PythonLib.DateUtil import DateTimeUtilities
 from PythonLib.StringUtil import StringUtil
@@ -25,6 +25,7 @@ class Mqtt2Influx:
 
         self.mqttClient.subscribeStartWithTopic("/house/", self.receiveData)
         self.scheduler.scheduleEach(self.__keepAlive, 10000)
+        self.influxDb.deleteDatabase()
         self.influxDb.createDatabase()
 
         # self.includePattern.append(re.compile('/house/agents/FroelingP2/heartbeat'))
@@ -90,9 +91,9 @@ class Mqtt2Influx:
             if matched:
 
                 # Check if the variable contains a string
-                if StringUtil.isNubmer(payloadStr):
-                    payload = float(payloadStr)
-                elif (isBool := StringUtil.isBoolean(payloadStr)) is not None:
+                if StringUtil.isNubmer(payloadStr.strip()):
+                    payload = float(payloadStr.strip())
+                elif (isBool := StringUtil.isBoolean(payloadStr.strip())) is not None:
                     payload = 1 if isBool else 0
                 else:
                     payload = payloadStr
@@ -119,7 +120,11 @@ def main() -> None:
     mqttClient = Mqtt("koserver.iot", "/house", pahoMqtt.Client("Mqtt2Influx1", protocol=pahoMqtt.MQTTv311))
     scheduler.scheduleEach(mqttClient.loop, 500)
 
+    logging.getLogger('Mqtt2Influx').addHandler(MQTTHandler(mqttClient, '/house/agents/Mqtt2Influx/log'))
+
     Mqtt2Influx(mqttClient, scheduler, influxDb).setup()
+
+    print("Mqtt2Influx is running")
 
     while (True):
         scheduler.loop()
