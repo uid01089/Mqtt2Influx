@@ -4,6 +4,7 @@ import re
 
 
 import paho.mqtt.client as pahoMqtt
+from PythonLib.JsonUtil import JsonUtil
 from PythonLib.Mqtt import MQTTHandler, Mqtt
 from PythonLib.Scheduler import Scheduler
 from PythonLib.DateUtil import DateTimeUtilities
@@ -13,19 +14,42 @@ from PythonLib.Influx import Influx
 logger = logging.getLogger('Mqtt2Influx')
 
 
+class Module:
+    def __init__(self) -> None:
+        self.scheduler = Scheduler()
+        self.influxDb = Influx('koserver.parents', database="Mqtt2Influx")
+        self.mqttClient = Mqtt("koserver.iot", "/house", pahoMqtt.Client("Mqtt2Influx1", protocol=pahoMqtt.MQTTv311))
+
+    def getScheduler(self) -> Scheduler:
+        return self.scheduler
+
+    def getInfluxDb(self) -> Influx:
+        return self.influxDb
+
+    def getMqttClient(self) -> Mqtt:
+        return self.mqttClient
+
+    def setup(self) -> None:
+        self.scheduler.scheduleEach(self.mqttClient.loop, 500)
+
+    def loop(self) -> None:
+        self.scheduler.loop()
+
+
 class Mqtt2Influx:
 
-    def __init__(self, mqttClient: Mqtt, scheduler: Scheduler, influxDb: Influx) -> None:
-        self.mqttClient = mqttClient
-        self.scheduler = scheduler
-        self.influxDb = influxDb
+    def __init__(self, module: Module) -> None:
+        self.mqttClient = module.getMqttClient()
+        self.scheduler = module.getScheduler()
+        self.influxDb = module.getInfluxDb()
+
         self.includePattern = []
 
     def setup(self) -> None:
 
         self.mqttClient.subscribeStartWithTopic("/house/", self.receiveData)
         self.scheduler.scheduleEach(self.__keepAlive, 10000)
-        self.influxDb.deleteDatabase()
+        # self.influxDb.deleteDatabase()
         self.influxDb.createDatabase()
 
         # self.includePattern.append(re.compile('/house/agents/FroelingP2/heartbeat'))
@@ -99,13 +123,14 @@ class Mqtt2Influx:
                     payload = payloadStr
 
                 # print(topic, payload)
-                self.influxDb.write('Mqtt', {topic: payload})
+                self.influxDb.writeOnChange('Mqtt', {topic: payload})
 
         except BaseException:
             logging.exception('_1_')
 
     def __keepAlive(self) -> None:
         self.mqttClient.publishIndependentTopic('/house/agents/Mqtt2Influx/heartbeat', DateTimeUtilities.getCurrentDateString())
+        self.mqttClient.publishIndependentTopic('/house/agents/Mqtt2Influx/subscriptions', JsonUtil.obj2Json(self.mqttClient.getSubscriptionCatalog()))
 
 
 def main() -> None:
@@ -113,21 +138,16 @@ def main() -> None:
     logging.getLogger('Mqtt2Influx').setLevel(logging.DEBUG)
     logging.getLogger('PythonLib.Mqtt').setLevel(logging.INFO)
 
-    scheduler = Scheduler()
+    module = Module()
 
-    influxDb = Influx('koserver.parents', database="Mqtt2Influx")
+    logging.getLogger('Mqtt2Influx').addHandler(MQTTHandler(module.getMqttClient(), '/house/agents/Mqtt2Influx/log'))
 
-    mqttClient = Mqtt("koserver.iot", "/house", pahoMqtt.Client("Mqtt2Influx1", protocol=pahoMqtt.MQTTv311))
-    scheduler.scheduleEach(mqttClient.loop, 500)
-
-    logging.getLogger('Mqtt2Influx').addHandler(MQTTHandler(mqttClient, '/house/agents/Mqtt2Influx/log'))
-
-    Mqtt2Influx(mqttClient, scheduler, influxDb).setup()
+    Mqtt2Influx(module).setup()
 
     print("Mqtt2Influx is running")
 
     while (True):
-        scheduler.loop()
+        module.loop()
         time.sleep(0.25)
 
 
