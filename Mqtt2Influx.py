@@ -139,6 +139,7 @@ def main() -> None:
     logging.getLogger('PythonLib.Mqtt').setLevel(logging.INFO)
 
     module = Module()
+    module.setup()
 
     logging.getLogger('Mqtt2Influx').addHandler(MQTTHandler(module.getMqttClient(), '/house/agents/Mqtt2Influx/log'))
 
