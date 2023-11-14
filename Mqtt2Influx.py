@@ -17,7 +17,7 @@ logger = logging.getLogger('Mqtt2Influx')
 class Module:
     def __init__(self) -> None:
         self.scheduler = Scheduler()
-        self.influxDb = Influx('koserver.parents', database="Mqtt2Influx")
+        self.influxDb = Influx('koserver.parents', database="myhome")
         self.mqttClient = Mqtt("koserver.iot", "/house", pahoMqtt.Client("Mqtt2Influx1", protocol=pahoMqtt.MQTTv311))
 
     def getScheduler(self) -> Scheduler:
@@ -50,7 +50,7 @@ class Mqtt2Influx:
         self.mqttClient.subscribeStartWithTopic("/house/", self.receiveData)
         self.scheduler.scheduleEach(self.__keepAlive, 10000)
         # self.influxDb.deleteDatabase()
-        self.influxDb.createDatabase()
+        # self.influxDb.createDatabase()
 
         # self.includePattern.append(re.compile('/house/agents/FroelingP2/heartbeat'))
 
