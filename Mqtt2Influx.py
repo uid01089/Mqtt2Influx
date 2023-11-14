@@ -109,6 +109,11 @@ class Mqtt2Influx:
         self.includePattern.append(re.compile('/house/basement/ess/essinfo_common/PV/pv3_power'))
         self.includePattern.append(re.compile('/house/basement/ess/essinfo_home/direction/.+?'))
 
+        self.includePattern.append(re.compile('/house/basement/ess/essinfo_home/statistics/pcs_pv_total_power'))
+        self.includePattern.append(re.compile('/house/basement/ess/essinfo_home/statistics/batconv_power'))
+        self.includePattern.append(re.compile('/house/basement/ess/essinfo_home/statistics/load_power'))
+        self.includePattern.append(re.compile('/house/basement/ess/essinfo_home/statistics/grid_power'))
+
     def receiveData(self, topic: str, payloadStr: str) -> None:
 
         try:
