@@ -114,6 +114,19 @@ class Mqtt2Influx:
         self.includePattern.append(re.compile('/house/basement/ess/essinfo_home/statistics/load_power'))
         self.includePattern.append(re.compile('/house/basement/ess/essinfo_home/statistics/grid_power'))
 
+        self.includePattern.append(re.compile('/house/groundfloor/fritz/GetDSLInfo/NewUpstreamAttenuation'))
+        self.includePattern.append(re.compile('/house/groundfloor/fritz/GetDSLInfo/NewDownstreamAttenuation'))
+        self.includePattern.append(re.compile('/house/groundfloor/fritz/GetDSLInfo/NewUpstreamNoiseMargin'))
+        self.includePattern.append(re.compile('/house/groundfloor/fritz/GetDSLInfo/NewDownstreamNoiseMargin'))
+
+        self.includePattern.append(re.compile('/house/groundfloor/fritz/GetDSLInfo/NewUpstreamCurrRate'))
+        self.includePattern.append(re.compile('/house/groundfloor/fritz/GetDSLInfo/NewUpstreamMaxRate'))
+        self.includePattern.append(re.compile('/house/groundfloor/fritz/GetDSLInfo/NewDownstreamCurrRate'))
+        self.includePattern.append(re.compile('/house/groundfloor/fritz/GetDSLInfo/NewDownstreamMaxRate'))
+
+        self.includePattern.append(re.compile('/house/groundfloor/fritz/GetDSLInfo/NewFECErrors'))
+        self.includePattern.append(re.compile('/house/groundfloor/fritz/GetDSLInfo/NewCRCErrors'))
+
     def receiveData(self, topic: str, payloadStr: str) -> None:
 
         try:
