@@ -127,6 +127,10 @@ class Mqtt2Influx:
         self.includePattern.append(re.compile('/house/groundfloor/fritz/GetDSLInfo/NewFECErrors'))
         self.includePattern.append(re.compile('/house/groundfloor/fritz/GetDSLInfo/NewCRCErrors'))
 
+        self.includePattern.append(re.compile('/house/.+?/mikrotik/.*?/cpu-load'))
+        self.includePattern.append(re.compile('/house/.+?/mikrotik/.*?/traffic/.+?/rx-bits-per-second'))
+        self.includePattern.append(re.compile('/house/.+?/mikrotik/.*?/traffic/.+?/tx-bits-per-second'))
+
     def receiveData(self, topic: str, payloadStr: str) -> None:
 
         try:
