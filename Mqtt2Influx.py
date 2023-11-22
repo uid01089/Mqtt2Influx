@@ -1,7 +1,6 @@
 import logging
 import time
 import re
-from enum import Enum, auto
 
 
 import paho.mqtt.client as pahoMqtt
@@ -22,7 +21,6 @@ logger = logging.getLogger('Mqtt2Influx')
     never be deleted, use 'INF' for duration.
     The minimum retention period is 1 hour.
 '''
-
 
 
 class Module:
@@ -60,86 +58,92 @@ class Mqtt2Influx:
 
         self.mqttClient.subscribeStartWithTopic("/house/", self.receiveData)
         self.scheduler.scheduleEach(self.__keepAlive, 10000)
+
+        ret_inf = self.influxDb.createRetentionPolicy("INF")
+        ret_1w = self.influxDb.createRetentionPolicy("1w")
+        ret_4w = self.influxDb.createRetentionPolicy("4w")
+        ret_2d = self.influxDb.createRetentionPolicy("2d")
+
         # self.influxDb.deleteDatabase()
         # self.influxDb.createDatabase()
 
-        # self.includePattern.append((re.compile('/house/agents/FroelingP2/heartbeat'),"INF"))
+        # self.includePattern.append((re.compile('/house/agents/FroelingP2/heartbeat'),ret_inf))
 
-        self.includePattern.append((re.compile('/house/garden/automower/mower/status$'),"1w"))
-        self.includePattern.append((re.compile('/house/garden/automower/mower/status/plain'),"1w"))
-        self.includePattern.append((re.compile('/house/garden/automower/mower/battery/charge'),"1w"))
-        self.includePattern.append((re.compile('/house/garden/automower/mower/error/message'),"1w"))
-        self.includePattern.append((re.compile('/house/garden/automower/health/voltage/batt'),"1w"))
-        self.includePattern.append((re.compile('/house/garden/automower/mower/distance'),"1w"))
-        self.includePattern.append((re.compile('/house/garden/automower/mower/mode'),"1w"))
+        self.includePattern.append((re.compile('/house/garden/automower/mower/status$'), ret_1w))
+        self.includePattern.append((re.compile('/house/garden/automower/mower/status/plain'), ret_1w))
+        self.includePattern.append((re.compile('/house/garden/automower/mower/battery/charge'), ret_1w))
+        self.includePattern.append((re.compile('/house/garden/automower/mower/error/message'), ret_1w))
+        self.includePattern.append((re.compile('/house/garden/automower/health/voltage/batt'), ret_1w))
+        self.includePattern.append((re.compile('/house/garden/automower/mower/distance'), ret_1w))
+        self.includePattern.append((re.compile('/house/garden/automower/mower/mode'), ret_1w))
 
-        self.includePattern.append((re.compile('/house/basement/solartherm/measurement/TempSensor2'),"1w"))
-        self.includePattern.append((re.compile('/house/basement/solartherm/measurement/TempSensor1'),"1w"))
-        self.includePattern.append((re.compile('/house/basement/solartherm/measurement/TempSensor4'),"1w"))
-        self.includePattern.append((re.compile('/house/basement/solartherm/measurement/OperationHoursRelay1'),"1w"))
-        self.includePattern.append((re.compile('/house/basement/solartherm/measurement/HeatQuantity'),"1w"))
-        self.includePattern.append((re.compile('/house/basement/solartherm/measurement/PumpSpeedRelay1'),"1w"))
+        self.includePattern.append((re.compile('/house/basement/solartherm/measurement/TempSensor2'), ret_1w))
+        self.includePattern.append((re.compile('/house/basement/solartherm/measurement/TempSensor1'), ret_1w))
+        self.includePattern.append((re.compile('/house/basement/solartherm/measurement/TempSensor4'), ret_1w))
+        self.includePattern.append((re.compile('/house/basement/solartherm/measurement/OperationHoursRelay1'), ret_1w))
+        self.includePattern.append((re.compile('/house/basement/solartherm/measurement/HeatQuantity'), ret_1w))
+        self.includePattern.append((re.compile('/house/basement/solartherm/measurement/PumpSpeedRelay1'), ret_1w))
 
-        self.includePattern.append((re.compile('/house/basement/heizung/measurement/Puffert.un'),"1w"))
-        self.includePattern.append((re.compile('/house/basement/heizung/measurement/Puffert.ob'),"1w"))
-        self.includePattern.append((re.compile('/house/basement/heizung/measurement/Kesseltemp'),"1w"))
-        self.includePattern.append((re.compile('/house/basement/heizung/measurement/Betriebszustand'),"1w"))
-        self.includePattern.append((re.compile('/house/basement/heizung/measurement/Fuellst.:'),"1w"))
-        self.includePattern.append((re.compile('/house/basement/heizung/measurement/Einschub'),"1w"))
-        self.includePattern.append((re.compile('/house/basement/heizung/measurement/Außentemp'),"1w"))
-        self.includePattern.append((re.compile('/house/basement/heizung/measurement/Vorlauft.2'),"1w"))
-        self.includePattern.append((re.compile('/house/basement/heizung/measurement/Vorlauft.1'),"1w"))
-        self.includePattern.append((re.compile('/house/basement/heizung/measurement/Brenn.ST'),"1w"))
+        self.includePattern.append((re.compile('/house/basement/heizung/measurement/Puffert.un'), ret_1w))
+        self.includePattern.append((re.compile('/house/basement/heizung/measurement/Puffert.ob'), ret_1w))
+        self.includePattern.append((re.compile('/house/basement/heizung/measurement/Kesseltemp'), ret_1w))
+        self.includePattern.append((re.compile('/house/basement/heizung/measurement/Betriebszustand'), ret_1w))
+        self.includePattern.append((re.compile('/house/basement/heizung/measurement/Fuellst.:'), ret_1w))
+        self.includePattern.append((re.compile('/house/basement/heizung/measurement/Einschub'), ret_1w))
+        self.includePattern.append((re.compile('/house/basement/heizung/measurement/Außentemp'), ret_1w))
+        self.includePattern.append((re.compile('/house/basement/heizung/measurement/Vorlauft.2'), ret_1w))
+        self.includePattern.append((re.compile('/house/basement/heizung/measurement/Vorlauft.1'), ret_1w))
+        self.includePattern.append((re.compile('/house/basement/heizung/measurement/Brenn.ST'), ret_1w))
 
-        self.includePattern.append((re.compile('/house/attic/vallox/measurement/IncomingTemp'),"1w"))
-        self.includePattern.append((re.compile('/house/attic/vallox/measurement/InsideTemp'),"1w"))
-        self.includePattern.append((re.compile('/house/attic/vallox/measurement/OutsideTemp'),"1w"))
-        self.includePattern.append((re.compile('/house/attic/vallox/measurement/ExhaustTemp'),"1w"))
-        self.includePattern.append((re.compile('/house/attic/vallox/measurement/FanSpeed'),"1w"))
-        self.includePattern.append((re.compile('/house/attic/vallox/measurement/PowerState'),"1w"))
-        self.includePattern.append((re.compile('/house/attic/vallox/measurement/FilterguardIndicator'),"1w"))
+        self.includePattern.append((re.compile('/house/attic/vallox/measurement/IncomingTemp'), ret_1w))
+        self.includePattern.append((re.compile('/house/attic/vallox/measurement/InsideTemp'), ret_1w))
+        self.includePattern.append((re.compile('/house/attic/vallox/measurement/OutsideTemp'), ret_1w))
+        self.includePattern.append((re.compile('/house/attic/vallox/measurement/ExhaustTemp'), ret_1w))
+        self.includePattern.append((re.compile('/house/attic/vallox/measurement/FanSpeed'), ret_1w))
+        self.includePattern.append((re.compile('/house/attic/vallox/measurement/PowerState'), ret_1w))
+        self.includePattern.append((re.compile('/house/attic/vallox/measurement/FilterguardIndicator'), ret_1w))
 
-        self.includePattern.append((re.compile('/house/garden/weatherstation/temp_c'),"1w"))
-        self.includePattern.append((re.compile('/house/garden/weatherstation/humidity'),"1w"))
-        self.includePattern.append((re.compile('/house/garden/weatherstation/wind_gust_meter_sec'),"1w"))
-        self.includePattern.append((re.compile('/house/garden/weatherstation/wind_avg_meter_sec'),"1w"))
-        self.includePattern.append((re.compile('/house/garden/weatherstation/wind_direction_deg'),"1w"))
-        self.includePattern.append((re.compile('/house/garden/weatherstation/rain_mm'),"1w"))
+        self.includePattern.append((re.compile('/house/garden/weatherstation/temp_c'), ret_1w))
+        self.includePattern.append((re.compile('/house/garden/weatherstation/humidity'), ret_1w))
+        self.includePattern.append((re.compile('/house/garden/weatherstation/wind_gust_meter_sec'), ret_1w))
+        self.includePattern.append((re.compile('/house/garden/weatherstation/wind_avg_meter_sec'), ret_1w))
+        self.includePattern.append((re.compile('/house/garden/weatherstation/wind_direction_deg'), ret_1w))
+        self.includePattern.append((re.compile('/house/garden/weatherstation/rain_mm'), ret_1w))
 
-        self.includePattern.append((re.compile('/house/rooms/.+?/Temperature'),"1w"))
-        self.includePattern.append((re.compile('/house/rooms/.+?/Humidity'),"1w"))
-        self.includePattern.append((re.compile('/house/rooms/.+?/TargetTemperature'),"1w"))
-        self.includePattern.append((re.compile('/house/rooms/.+?/heating'),"1w"))
+        self.includePattern.append((re.compile('/house/rooms/.+?/Temperature'), ret_1w))
+        self.includePattern.append((re.compile('/house/rooms/.+?/Humidity'), ret_1w))
+        self.includePattern.append((re.compile('/house/rooms/.+?/TargetTemperature'), ret_1w))
+        self.includePattern.append((re.compile('/house/rooms/.+?/heating'), ret_1w))
 
-        self.includePattern.append((re.compile('/house/basement/ess/essinfo_common/BATT/soc'),"INF"))
-        self.includePattern.append((re.compile('/house/basement/ess/essinfo_common/LOAD/load_power'),"INF"))
-        self.includePattern.append((re.compile('/house/basement/ess/essinfo_common/GRID/active_power'),"INF"))
-        self.includePattern.append((re.compile('/house/basement/ess/essinfo_common/BATT/dc_power'),"INF"))
-        self.includePattern.append((re.compile('/house/basement/ess/essinfo_common/PV/pv1_power'),"INF"))
-        self.includePattern.append((re.compile('/house/basement/ess/essinfo_common/PV/pv2_power'),"INF"))
-        self.includePattern.append((re.compile('/house/basement/ess/essinfo_common/PV/pv3_power'),"INF"))
-        self.includePattern.append((re.compile('/house/basement/ess/essinfo_home/direction/.+?'),"INF"))
-        self.includePattern.append((re.compile('/house/basement/ess/essinfo_home/statistics/pcs_pv_total_power'),"INF"))
-        self.includePattern.append((re.compile('/house/basement/ess/essinfo_home/statistics/batconv_power'),"INF"))
-        self.includePattern.append((re.compile('/house/basement/ess/essinfo_home/statistics/load_power'),"INF"))
-        self.includePattern.append((re.compile('/house/basement/ess/essinfo_home/statistics/grid_power'),"INF"))
+        self.includePattern.append((re.compile('/house/basement/ess/essinfo_common/BATT/soc'), ret_inf))
+        self.includePattern.append((re.compile('/house/basement/ess/essinfo_common/LOAD/load_power'), ret_inf))
+        self.includePattern.append((re.compile('/house/basement/ess/essinfo_common/GRID/active_power'), ret_inf))
+        self.includePattern.append((re.compile('/house/basement/ess/essinfo_common/BATT/dc_power'), ret_inf))
+        self.includePattern.append((re.compile('/house/basement/ess/essinfo_common/PV/pv1_power'), ret_inf))
+        self.includePattern.append((re.compile('/house/basement/ess/essinfo_common/PV/pv2_power'), ret_inf))
+        self.includePattern.append((re.compile('/house/basement/ess/essinfo_common/PV/pv3_power'), ret_inf))
+        self.includePattern.append((re.compile('/house/basement/ess/essinfo_home/direction/.+?'), ret_inf))
+        self.includePattern.append((re.compile('/house/basement/ess/essinfo_home/statistics/pcs_pv_total_power'), ret_inf))
+        self.includePattern.append((re.compile('/house/basement/ess/essinfo_home/statistics/batconv_power'), ret_inf))
+        self.includePattern.append((re.compile('/house/basement/ess/essinfo_home/statistics/load_power'), ret_inf))
+        self.includePattern.append((re.compile('/house/basement/ess/essinfo_home/statistics/grid_power'), ret_inf))
 
-        self.includePattern.append((re.compile('/house/groundfloor/fritz/GetDSLInfo/NewUpstreamAttenuation'),"4w"))
-        self.includePattern.append((re.compile('/house/groundfloor/fritz/GetDSLInfo/NewDownstreamAttenuation'),"4w"))
-        self.includePattern.append((re.compile('/house/groundfloor/fritz/GetDSLInfo/NewUpstreamNoiseMargin'),"4w"))
-        self.includePattern.append((re.compile('/house/groundfloor/fritz/GetDSLInfo/NewDownstreamNoiseMargin'),"4w"))
-        self.includePattern.append((re.compile('/house/groundfloor/fritz/GetDSLInfo/NewUpstreamCurrRate'),"4w"))
-        self.includePattern.append((re.compile('/house/groundfloor/fritz/GetDSLInfo/NewUpstreamMaxRate'),"4w"))
-        self.includePattern.append((re.compile('/house/groundfloor/fritz/GetDSLInfo/NewDownstreamCurrRate'),"4w"))
-        self.includePattern.append((re.compile('/house/groundfloor/fritz/GetDSLInfo/NewDownstreamMaxRate'),"4w"))
-        self.includePattern.append((re.compile('/house/groundfloor/fritz/GetDSLInfo/NewFECErrors'),"4w"))
-        self.includePattern.append((re.compile('/house/groundfloor/fritz/GetDSLInfo/NewCRCErrors'),"4w"))
+        self.includePattern.append((re.compile('/house/groundfloor/fritz/GetDSLInfo/NewUpstreamAttenuation'), ret_4w))
+        self.includePattern.append((re.compile('/house/groundfloor/fritz/GetDSLInfo/NewDownstreamAttenuation'), ret_4w))
+        self.includePattern.append((re.compile('/house/groundfloor/fritz/GetDSLInfo/NewUpstreamNoiseMargin'), ret_4w))
+        self.includePattern.append((re.compile('/house/groundfloor/fritz/GetDSLInfo/NewDownstreamNoiseMargin'), ret_4w))
+        self.includePattern.append((re.compile('/house/groundfloor/fritz/GetDSLInfo/NewUpstreamCurrRate'), ret_4w))
+        self.includePattern.append((re.compile('/house/groundfloor/fritz/GetDSLInfo/NewUpstreamMaxRate'), ret_4w))
+        self.includePattern.append((re.compile('/house/groundfloor/fritz/GetDSLInfo/NewDownstreamCurrRate'), ret_4w))
+        self.includePattern.append((re.compile('/house/groundfloor/fritz/GetDSLInfo/NewDownstreamMaxRate'), ret_4w))
+        self.includePattern.append((re.compile('/house/groundfloor/fritz/GetDSLInfo/NewFECErrors'), ret_4w))
+        self.includePattern.append((re.compile('/house/groundfloor/fritz/GetDSLInfo/NewCRCErrors'), ret_4w))
 
-        self.includePattern.append((re.compile('/house/.+?/mikrotik/.*?/cpu-load'),"2d"))
-        self.includePattern.append((re.compile('/house/.+?/mikrotik/.*?/traffic/.+?/rx-bits-per-second'),"2d"))
-        self.includePattern.append((re.compile('/house/.+?/mikrotik/.*?/traffic/.+?/tx-bits-per-second'),"2d"))
+        self.includePattern.append((re.compile('/house/.+?/mikrotik/.*?/cpu-load'), ret_2d))
+        self.includePattern.append((re.compile('/house/.+?/mikrotik/.*?/traffic/.+?/rx-bits-per-second'), ret_2d))
+        self.includePattern.append((re.compile('/house/.+?/mikrotik/.*?/traffic/.+?/tx-bits-per-second'), ret_2d))
 
-        self.includePattern.append((re.compile('/house/agents/ChargeControl/data/.*'),"1w"))
+        self.includePattern.append((re.compile('/house/agents/ChargeControl/data/.*'), ret_1w))
 
     def receiveData(self, topic: str, payloadStr: str) -> None:
 
@@ -150,7 +154,7 @@ class Mqtt2Influx:
 
             for pattern_retention in self.includePattern:
                 pattern = pattern_retention[0]
-                retention = pattern_retention[1]
+                retention = pattern_retention[1].getName()
 
                 if pattern.match(topic):
                     matched = True
@@ -167,7 +171,7 @@ class Mqtt2Influx:
                     payload = payloadStr
 
                 # print(topic, payload)
-                self.influxDb.writeOnChange('Mqtt'+"_"+retention, {topic: payload},60000,retention)
+                self.influxDb.writeOnChange('Mqtt' + "_" + retention, {topic: payload}, 60000, retention)
 
         except BaseException:
             logging.exception('_1_')
@@ -185,7 +189,7 @@ def main() -> None:
     module = Module()
     module.setup()
 
-    logging.getLogger('Mqtt2Influx').addHandler(MQTTHandler(module.getMqttClient(), '/house/agents/Mqtt2Influx/log'),"INF"))
+    logging.getLogger('Mqtt2Influx').addHandler(MQTTHandler(module.getMqttClient(), '/house/agents/Mqtt2Influx/log'))
 
     Mqtt2Influx(module).setup()
 
