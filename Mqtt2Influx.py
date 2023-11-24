@@ -131,6 +131,8 @@ class Mqtt2Influx:
         self.includePattern.append(re.compile('/house/.+?/mikrotik/.*?/traffic/.+?/rx-bits-per-second'))
         self.includePattern.append(re.compile('/house/.+?/mikrotik/.*?/traffic/.+?/tx-bits-per-second'))
 
+        self.includePattern.append(re.compile('/house/agents/ChargeControl/data/.*'))
+
     def receiveData(self, topic: str, payloadStr: str) -> None:
 
         try:
